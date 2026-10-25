@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthProfile, logAudit } from "@/lib/audit";
+import { canAccessOutlet, getAuthProfile, logAudit } from "@/lib/audit";
 import { computeEmployeePayroll, saveEmployeePayrollSummary } from "@/lib/payroll-server";
 
 // GET /api/employees/:id/payroll?month=&year=
@@ -22,6 +22,9 @@ export async function GET(
 
   const computed = await computeEmployeePayroll(id, profile.org_id, month, year);
   if (!computed) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!canAccessOutlet(profile, computed.employee.outlet_id)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   return NextResponse.json(computed.payroll, {
     headers: { "Cache-Control": "private, max-age=20, stale-while-revalidate=90" },
@@ -44,15 +47,19 @@ export async function POST(
     return NextResponse.json({ error: "month and year are required" }, { status: 400 });
   }
 
+  const employee = await prisma.employee.findFirst({
+    where: { id, outlet: { org_id: profile.org_id } },
+    select: { outlet_id: true },
+  });
+  if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!canAccessOutlet(profile, employee.outlet_id)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const summary = await saveEmployeePayrollSummary(id, profile.org_id, month, year, {
     forceNewOtRate: Boolean(force_new_ot_rate),
   });
   if (!summary) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  const emp = await prisma.employee.findFirst({
-    where: { id, outlet: { org_id: profile.org_id } },
-    select: { outlet_id: true },
-  });
 
   await logAudit({
     org_id: profile.org_id,
@@ -67,7 +74,7 @@ export async function POST(
       total_pay: summary.total_pay,
       closing_balance: summary.closing_balance,
     }),
-    outlet_id: emp?.outlet_id ?? null,
+    outlet_id: employee.outlet_id,
   });
 
   return NextResponse.json(summary);

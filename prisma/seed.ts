@@ -4,7 +4,8 @@ import { calculateBalance, calculatePayroll } from "../src/lib/payroll";
 
 const prisma = new PrismaClient();
 
-// Loose admin client type — createClient(url, key) is not assignable to bare ReturnType<typeof createClient>
+// The client is instantiated without generated database types in this standalone seed script.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AdminClient = SupabaseClient<any, "public", any>;
 
 type DemoEmployee = {

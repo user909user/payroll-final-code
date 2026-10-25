@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "outlet_id is required" }, { status: 400 });
   }
 
-  let employees = await prisma.employee.findMany({
+  const employees = await prisma.employee.findMany({
     where: outletId
       ? { outlet_id: outletId, outlet: { org_id: profile.org_id } }
       : { id: legacyEmployeeId!, outlet: { org_id: profile.org_id } },

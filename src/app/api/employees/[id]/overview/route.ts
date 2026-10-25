@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthProfile } from "@/lib/audit";
+import { canAccessOutlet, getAuthProfile } from "@/lib/audit";
 import { shouldHideEmployeeMoney } from "@/lib/money-visibility";
 import { prisma } from "@/lib/prisma";
 import { computeEmployeePayroll, type PayrollBreakdown } from "@/lib/payroll-server";
@@ -50,6 +50,9 @@ export async function GET(
   ]);
 
   if (!computed) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!canAccessOutlet(profile, computed.employee.outlet_id)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const hideMoney = shouldHideEmployeeMoney(profile, computed.employee.salary_hidden);
   const employee = hideMoney

@@ -81,6 +81,7 @@ export default function AttendanceClient() {
   useEffect(() => {
     if (!employees.length) return;
     if (!employees.find((e) => e.id === selectedEmployee)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the selected employee valid after SWR refreshes.
       setSelectedEmployee(employees[0].id);
     }
   }, [employees, selectedEmployee]);
@@ -96,10 +97,12 @@ export default function AttendanceClient() {
   useEffect(() => {
     // Don't clobber in-flight optimistic edits
     if (savingDate) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronize local optimistic state with the fetched records.
     setRecords(recordsToMap(attendanceList));
   }, [attendanceList, savingDate]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- close an editor for a different employee or month.
     setEditingDay(null);
   }, [selectedEmployee, month, year]);
 

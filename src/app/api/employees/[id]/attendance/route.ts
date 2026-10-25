@@ -143,11 +143,7 @@ export async function POST(
   const employee = await verifyEmployee(id, profile.org_id);
   if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  if (
-    profile.role !== "admin" &&
-    profile.outlet_id &&
-    employee.outlet_id !== profile.outlet_id
-  ) {
+  if (!canAccessOutlet(profile, employee.outlet_id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -244,11 +240,7 @@ export async function DELETE(
   const employee = await verifyEmployee(id, profile.org_id);
   if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  if (
-    profile.role !== "admin" &&
-    profile.outlet_id &&
-    employee.outlet_id !== profile.outlet_id
-  ) {
+  if (!canAccessOutlet(profile, employee.outlet_id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

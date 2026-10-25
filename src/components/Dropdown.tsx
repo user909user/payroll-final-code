@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
@@ -44,7 +44,7 @@ export default function Dropdown<T extends string>({
   const selectedIndex = options.findIndex((o) => o.value === value);
   const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-  function updateMenuPosition() {
+  const updateMenuPosition = useCallback(() => {
     const el = triggerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -67,15 +67,16 @@ export default function Dropdown<T extends string>({
       }
       return { top, left, width, maxHeight };
     });
-  }
+  }, [variant]);
 
   useLayoutEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear portal positioning when the menu closes.
       setMenuPos(null);
       return;
     }
     updateMenuPosition();
-  }, [open, variant, options.length]);
+  }, [open, updateMenuPosition]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +114,7 @@ export default function Dropdown<T extends string>({
       window.removeEventListener("resize", onReposition);
       window.removeEventListener("scroll", onReposition, true);
     };
-  }, [open]);
+  }, [open, updateMenuPosition]);
 
   useEffect(() => {
     if (!open) return;

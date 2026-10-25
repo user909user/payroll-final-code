@@ -81,6 +81,7 @@ export function OutletProvider({
         (staffOutletId && outlets.some((o) => o.id === staffOutletId)
           ? staffOutletId
           : outlets[0]?.id) ?? "";
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- staff selection is derived from their outlet assignment.
       setSelectedOutletIdState(locked);
       return;
     }

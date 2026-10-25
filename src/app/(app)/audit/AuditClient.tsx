@@ -51,11 +51,13 @@ export default function AuditClient() {
   const { data: me } = useSWR<Me>(swrKeys.me());
   const isAdmin = me?.role === "admin";
   const meReady = me != null;
+  const outletSelectionKey = selectedOutletIds.join(",");
 
   // Admin: default all outlets selected. Staff: locked to their outlet.
   useEffect(() => {
     if (!outlets.length || !meReady) return;
     if (isAdmin) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronize selection with the outlets returned by SWR.
       setSelectedOutletIds((prev) => {
         if (outletsReady && prev.length > 0) {
           const valid = prev.filter((id) => outlets.some((o) => o.id === id));
@@ -77,8 +79,9 @@ export default function AuditClient() {
   }, [outlets, isAdmin, meReady, me?.outlet_id, selectedOutletId, outletsReady]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- filter changes always restart pagination at the first page.
     setPage(1);
-  }, [selectedOutletIds.join(","), entityType, dateFrom, dateTo]);
+  }, [outletSelectionKey, entityType, dateFrom, dateTo]);
 
   const allSelected =
     outlets.length > 0 && selectedOutletIds.length === outlets.length;

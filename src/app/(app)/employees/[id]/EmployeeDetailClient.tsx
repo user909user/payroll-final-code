@@ -82,7 +82,7 @@ export default function EmployeeDetailClient({ employeeId }: { employeeId: strin
   const employee = data?.employee ?? null;
   const payroll = data?.payroll ?? null;
   const payments = data?.payments ?? [];
-  const attendance = attendanceData ?? [];
+  const attendance = useMemo(() => attendanceData ?? [], [attendanceData]);
 
   const recordsByDay = useMemo(() => {
     const map: Record<number, AttendanceItem> = {};

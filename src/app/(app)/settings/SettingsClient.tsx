@@ -692,12 +692,14 @@ export default function SettingsClient() {
   const currentMonthLabel = `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- drafts belong to the currently selected outlet.
     setOtDrafts({});
     setOtMessage("");
     setOtError("");
   }, [otOutletId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the selected employee and messages belong to the selected outlet.
     setEmployeeId("");
     setError("");
     setMessage("");
